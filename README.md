@@ -1,2 +1,5 @@
-# fps
-making an fps from scratch
+### build and run
+cd build
+cmake ..
+cmake --build .
+./SimpleFPS 
