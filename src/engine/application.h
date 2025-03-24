@@ -28,12 +28,10 @@ private:
     int m_width;
     int m_height;
     
-    // Game components
     Shader* m_shader;
     Player* m_player;
     World* m_world;
     
-    // OpenGL rendering data
     unsigned int VAO, VBO, EBO;
 };
 #endif

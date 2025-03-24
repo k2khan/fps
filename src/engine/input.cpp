@@ -12,7 +12,6 @@ int Input::m_mouseDeltaX = 0;
 int Input::m_mouseDeltaY = 0;
 
 void Input::init() {
-    // Nothing to do for now
 }
 
 void Input::update() {

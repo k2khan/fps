@@ -45,7 +45,6 @@ Application::Application(const char* title, int width, int height)
     glEnable(GL_DEPTH_TEST);
     SDL_SetRelativeMouseMode(SDL_TRUE);
     
-    // Initialize game components AFTER OpenGL is initialized
     m_shader = new Shader("assets/shaders/basic.vert", "assets/shaders/basic.frag");
     m_world = new World();
     m_player = new Player(glm::vec3(0.0f, 1.75f, 0.0f));
@@ -105,14 +104,11 @@ void Application::update(float deltaTime) {
 }
 
 void Application::render() {
-    // Clear the screen
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     
-    // Activate shader
     m_shader->use();
     
-    // Set up camera/view transformation
     glm::mat4 view = m_player->getCamera()->getViewMatrix();
     glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)m_width / (float)m_height, 0.1f, 100.0f);
     

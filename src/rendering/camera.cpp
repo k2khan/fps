@@ -22,8 +22,6 @@ void Camera::processKeyboard(int direction, float deltaTime) {
     if (direction == RIGHT)
         Position += Right * velocity;
     
-    // Keep the camera at a fixed height (FPS style)
-    // Position.y = 1.75f; // Adjust to desired height
 }
 
 void Camera::processMouseMovement(float xoffset, float yoffset, bool constrainPitch) {
