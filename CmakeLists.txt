@@ -37,3 +37,8 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
     ${CMAKE_SOURCE_DIR}/assets $<TARGET_FILE_DIR:${PROJECT_NAME}>/assets
 )
+
+# Find GLM
+find_package(glm REQUIRED)
+include_directories(${GLM_INCLUDE_DIRS})
+include_directories(/usr/local/include)
