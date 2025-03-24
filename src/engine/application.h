@@ -6,9 +6,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include "rendering/shader.h"
-#include "rendering/camera.h"
-#include "game/world.h"
-#include "game/player.h"
+#include "game/game_manager.h"
+#include "game/fighter.h"
 
 class Application {
 public:
@@ -29,8 +28,7 @@ private:
     int m_height;
     
     Shader* m_shader;
-    Player* m_player;
-    World* m_world;
+    GameManager* m_gameManager;
     
     unsigned int VAO, VBO, EBO;
 };

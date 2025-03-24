@@ -6,7 +6,7 @@
 
 Application::Application(const char* title, int width, int height)
     : m_window(nullptr), m_glContext(nullptr), m_running(false), m_width(width), m_height(height),
-      m_shader(nullptr), m_world(nullptr), m_player(nullptr) {
+      m_shader(nullptr), m_gameManager(nullptr) {
     
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         std::cerr << "SDL could not initialize! SDL_Error: " << SDL_GetError() << std::endl;
@@ -43,11 +43,24 @@ Application::Application(const char* title, int width, int height)
     }
 
     glEnable(GL_DEPTH_TEST);
-    SDL_SetRelativeMouseMode(SDL_TRUE);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    
+    // For a 2D game, we don't need relative mouse mode
+    SDL_SetRelativeMouseMode(SDL_FALSE);
     
     m_shader = new Shader("assets/shaders/basic.vert", "assets/shaders/basic.frag");
-    m_world = new World();
-    m_player = new Player(glm::vec3(0.0f, 1.75f, 0.0f));
+    
+    // Initialize game manager
+    m_gameManager = new GameManager();
+    m_gameManager->init();
+    
+    // Add two players for testing
+    m_gameManager->addPlayer(FighterType::BALANCED, 0);
+    m_gameManager->addPlayer(FighterType::HEAVY, 1);
+    
+    // Start the game
+    m_gameManager->startGame();
     
     initRenderData();
     
@@ -83,24 +96,29 @@ void Application::processInput() {
             m_running = false;
         }
     }
+    
+    // Process player 1 input
+    glm::vec2 movement1(0.0f);
+    if (Input::isKeyDown(SDL_SCANCODE_A)) movement1.x -= 1.0f;
+    if (Input::isKeyDown(SDL_SCANCODE_D)) movement1.x += 1.0f;
+    bool jump1 = Input::isKeyPressed(SDL_SCANCODE_W);
+    bool attack1 = Input::isKeyPressed(SDL_SCANCODE_SPACE);
+    
+    m_gameManager->processPlayerInput(0, movement1, jump1, attack1, AttackType::NEUTRAL);
+    
+    // Process player 2 input
+    glm::vec2 movement2(0.0f);
+    if (Input::isKeyDown(SDL_SCANCODE_LEFT)) movement2.x -= 1.0f;
+    if (Input::isKeyDown(SDL_SCANCODE_RIGHT)) movement2.x += 1.0f;
+    bool jump2 = Input::isKeyPressed(SDL_SCANCODE_UP);
+    bool attack2 = Input::isKeyPressed(SDL_SCANCODE_RCTRL);
+    
+    m_gameManager->processPlayerInput(1, movement2, jump2, attack2, AttackType::NEUTRAL);
 }
 
 void Application::update(float deltaTime) {
-    if (Input::isKeyDown(SDL_SCANCODE_W))
-        m_player->processKeyboard(Camera_Movement::FORWARD, deltaTime);
-    if (Input::isKeyDown(SDL_SCANCODE_S))
-        m_player->processKeyboard(Camera_Movement::BACKWARD, deltaTime);
-    if (Input::isKeyDown(SDL_SCANCODE_A))
-        m_player->processKeyboard(Camera_Movement::LEFT, deltaTime);
-    if (Input::isKeyDown(SDL_SCANCODE_D))
-        m_player->processKeyboard(Camera_Movement::RIGHT, deltaTime);
-    if (Input::isKeyPressed(SDL_SCANCODE_SPACE))
-        m_player->jump();
-        
-    if (Input::getMouseDeltaX() != 0 || Input::getMouseDeltaY() != 0)
-        m_player->processMouseMovement((float)Input::getMouseDeltaX(), -(float)Input::getMouseDeltaY());
-        
-    m_player->update(deltaTime, m_world);
+    // Update game manager
+    m_gameManager->update(deltaTime);
 }
 
 void Application::render() {
@@ -109,14 +127,8 @@ void Application::render() {
     
     m_shader->use();
     
-    glm::mat4 view = m_player->getCamera()->getViewMatrix();
-    glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)m_width / (float)m_height, 0.1f, 100.0f);
-    
-    m_shader->setMat4("view", view);
-    m_shader->setMat4("projection", projection);
-    
-    // Render the world
-    m_world->draw(*m_shader);
+    // Render game
+    m_gameManager->render(*m_shader);
 }
 
 void Application::initRenderData() {
@@ -155,8 +167,7 @@ void Application::initRenderData() {
 
 Application::~Application() {
     delete m_shader;
-    delete m_world;
-    delete m_player;
+    delete m_gameManager;
     
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
